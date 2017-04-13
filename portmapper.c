@@ -36,10 +36,10 @@ int establishConnection(void) {
 }
 
 int main(void) {
-  struct sockaddr_in si_other;
+  struct sockaddr_in si_other; // Address of the sender
+  unsigned int slen = sizeof(si_other); // Length of the address of the sender
   int sock, recv_len;
-  unsigned int slen = sizeof(si_other);
-  char buffer[512];
+  char buffer[4];
 
   sock = establishConnection();
   // Listen for data
@@ -48,17 +48,24 @@ int main(void) {
     fflush(stdout);
 
     // Try to receive data, this is a blocking call
-    if ((recv_len = recvfrom(sock, buffer, 512, 0, (struct sockaddr *) &si_other, &slen)) == -1)
+    if ((recv_len = recvfrom(sock, buffer, 4, 0, (struct sockaddr *) &si_other, &slen)) == -1)
       errorAndExit("recvfrom");
 
-    // Print data received
-    printf("Data: %s\n", buffer);
+    char *responseString = malloc(10 * sizeof(char));
+    // Check data received and prepare response
+    if (strcpy(buffer, "DNS") != 0) {
+      responseString = "(0, 0000)";
+    } else { // It's correct, so get the port number, which in this case will be 4723
+      responseString = "(1, 4723)";
+    }
 
     // Reply with the same data
-    if (sendto(sock, buffer, recv_len, 0, (struct sockaddr *) &si_other, slen) == -1)
+    if (sendto(sock, responseString, strlen(responseString), 0, (struct sockaddr *) &si_other, slen) == -1)
       errorAndExit("sendto");
+
+    free(responseString);
   }
   // Close socket
   close(sock);
-
+  return 0;
 }
