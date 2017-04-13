@@ -53,11 +53,7 @@ int main(void) {
 
     char *responseString = malloc(10 * sizeof(char));
     // Check data received and prepare response
-    if (strcpy(buffer, "DNS") != 0) {
-      responseString = "(0, 0000)";
-    } else { // It's correct, so get the port number, which in this case will be 4723
-      responseString = "(1, 4723)";
-    }
+    responseString = (strcpy(buffer, "DNS") != 0) ? "(0, 0000)" : "(1, 4723)";
 
     // Reply with the same data
     if (sendto(sock, responseString, strlen(responseString), 0, (struct sockaddr *) &si_other, slen) == -1)
