@@ -10,6 +10,30 @@ void errorAndExit(char *s) {
     exit(1);
 }
 
+char* getField(char* line, int num) {
+    char* token;
+    for (token = strtok(line, ","); token && *token; token = strtok(NULL, ",\n"))
+        if (!num--)
+            return token;
+    return NULL;
+}
+
+char* readCSV(char* url) {
+  char line[128];
+  FILE* dnsEntries = fopen("dnsentries.csv", "r");
+
+  while (fgets(line, 128, dnsEntries)) {
+      char* field = getField(strdup(line), 0);
+
+      if (strcmp(field, url) == 0) {
+        char* ipAddress = getField(strdup(line), 1);
+        printf("Got IP Address%s for url %s\n", ipAddress, url);
+        return ipAddress;
+      }
+  }
+  return "0.0.0.0";
+}
+
 /**
 * establishConnection - setup connection to server
 * @return - socket to connect to
@@ -39,7 +63,10 @@ int main(void) {
   struct sockaddr_in si_other; // Address of the sender
   unsigned int slen = sizeof(si_other); // Length of the address of the sender
   int sock, recv_len;
-  char buffer[4];
+  char buffer[50];
+  char* string;
+
+  string = readCSV("amazon.com");
 
   sock = establishConnection();
   // Listen for data
@@ -48,7 +75,7 @@ int main(void) {
     fflush(stdout);
 
     // Try to receive data, this is a blocking call
-    if ((recv_len = recvfrom(sock, buffer, 4, 0, (struct sockaddr *) &si_other, &slen)) == -1)
+    if ((recv_len = recvfrom(sock, buffer, 50, 0, (struct sockaddr *) &si_other, &slen)) == -1)
       errorAndExit("recvfrom");
 
     char *responseString = malloc(10 * sizeof(char));
