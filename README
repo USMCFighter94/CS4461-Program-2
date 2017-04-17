@@ -1,0 +1,2 @@
+To compile, run 'make' in the directory.
+The individual executables are: portmapper, dnsresolver, and dnslookup
