@@ -2,8 +2,7 @@
 CC = gcc
 EXEC = dnslookup
 CCFLAGS = -g -pedantic -Wall -Wextra
-# OBJS = portmapper.o dnsresolver.o
-OBJS = dnsresolver.o
+OBJS = portmapper.o dnsresolver.o dnslookup.o
 
 ${EXEC}: ${OBJS}
 	${CC} ${CCFLAGS} -lm -o ${EXEC} ${OBJS}
@@ -17,5 +16,6 @@ run: ${EXEC}
 clean:
 	rm -f ${EXEC} ${OBJS}
 
-# portmapper.o: portmapper.c
+portmapper.o: portmapper.c
 dnsresolver.o: dnsresolver.c
+dnslookup.o: dnslookup.c
