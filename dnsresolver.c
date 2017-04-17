@@ -63,24 +63,25 @@ int main(void) {
   struct sockaddr_in si_other; // Address of the sender
   unsigned int slen = sizeof(si_other); // Length of the address of the sender
   int sock, recv_len;
-  char buffer[50];
-  char* string;
-
-  string = readCSV("amazon.com");
+  char *string, buffer[50];
 
   sock = establishConnection();
   // Listen for data
   while (1) {
-    printf("Waiting...\n");
+    printf("DNS Resolver: Waiting...\n");
     fflush(stdout);
 
     // Try to receive data, this is a blocking call
     if ((recv_len = recvfrom(sock, buffer, 50, 0, (struct sockaddr *) &si_other, &slen)) == -1)
       errorAndExit("recvfrom");
 
-    char *responseString = malloc(10 * sizeof(char));
+    char *responseString = malloc(16 * sizeof(char));
+    string = readCSV("amazon.com");
     // Check data received and prepare response
-    responseString = (strcpy(buffer, "DNS") != 0) ? "(0, 0000)" : "(1, 4723)";
+    if (strcpy(string, "0.0.0.0") == 0)
+      sprintf(responseString, "(1,%s)", string);
+    else
+      responseString = "(0, 0.0.0.0)";
 
     // Reply with the same data
     if (sendto(sock, responseString, strlen(responseString), 0, (struct sockaddr *) &si_other, slen) == -1)
