@@ -60,8 +60,6 @@ int main(void) {
     // Reply with the same data
     if (sendto(sock, responseString, strlen(responseString), 0, (struct sockaddr *) &si_other, slen) == -1)
       errorAndExit("sendto");
-
-    // free(responseString);
   }
   // Close socket
   close(sock);

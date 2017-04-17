@@ -11,11 +11,11 @@ void errorAndExit(char *s) {
 }
 
 char* getField(char* line, int num) {
-    char* token;
-    for (token = strtok(line, ","); token && *token; token = strtok(NULL, ",\n"))
-        if (!num--)
-            return token;
-    return NULL;
+  char* token;
+  for (token = strtok(line, ","); token && *token; token = strtok(NULL, ",\n"))
+    if (!num--)
+      return token;
+  return NULL;
 }
 
 char* readCSV(char* url) {
@@ -23,13 +23,12 @@ char* readCSV(char* url) {
   FILE* dnsEntries = fopen("dnsentries.csv", "r");
 
   while (fgets(line, 128, dnsEntries)) {
-      char* field = getField(strdup(line), 0);
-
-      if (strcmp(field, url) == 0) {
-        char* ipAddress = getField(strdup(line), 1);
-        printf("Got IP Address%s for url %s\n", ipAddress, url);
-        return ipAddress;
-      }
+    char* field = getField(strdup(line), 0);
+    if (strcmp(field, url) == 0) { // Found the URL, now get the IP
+      char* ipAddress = getField(strdup(line), 1);
+      printf("DNS Resolver: Got IP Address%s for url %s\n", ipAddress, url);
+      return ipAddress;
+    }
   }
   return "0.0.0.0";
 }
@@ -63,31 +62,36 @@ int main(void) {
   struct sockaddr_in si_other; // Address of the sender
   unsigned int slen = sizeof(si_other); // Length of the address of the sender
   int sock, recv_len;
-  char *string, buffer[50];
+  char *string, buffer[20];
 
   sock = establishConnection();
   // Listen for data
   while (1) {
     printf("DNS Resolver: Waiting...\n");
     fflush(stdout);
+    memset((char *) buffer, 0, sizeof(buffer));
 
     // Try to receive data, this is a blocking call
-    if ((recv_len = recvfrom(sock, buffer, 50, 0, (struct sockaddr *) &si_other, &slen)) == -1)
+    if ((recv_len = recvfrom(sock, buffer, 20, 0, (struct sockaddr *) &si_other, &slen)) == -1)
       errorAndExit("recvfrom");
 
+    printf("DNS Loopkup: Buffer == %s\n", buffer);
+
     char *responseString = malloc(16 * sizeof(char));
-    string = readCSV("amazon.com");
+    string = readCSV(buffer);
     // Check data received and prepare response
-    if (strcpy(string, "0.0.0.0") == 0)
+
+    printf("String == %s\n", string);
+    if (strcmp(string, "0.0.0.0") != 0)
       sprintf(responseString, "(1,%s)", string);
     else
       responseString = "(0, 0.0.0.0)";
 
+    printf("DNS Resolver: Got message %s. Sending %s in response\n", buffer, responseString);
+
     // Reply with the same data
     if (sendto(sock, responseString, strlen(responseString), 0, (struct sockaddr *) &si_other, slen) == -1)
       errorAndExit("sendto");
-
-    free(responseString);
   }
   // Close socket
   close(sock);
