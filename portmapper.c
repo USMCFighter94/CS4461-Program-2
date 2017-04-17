@@ -44,7 +44,7 @@ int main(void) {
   sock = establishConnection();
   // Listen for data
   while (1) {
-    printf("Waiting...\n");
+    printf("PortMapper: Waiting...\n");
     fflush(stdout);
 
     // Try to receive data, this is a blocking call
