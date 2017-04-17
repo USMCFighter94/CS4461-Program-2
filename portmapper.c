@@ -53,13 +53,15 @@ int main(void) {
 
     char *responseString = malloc(10 * sizeof(char));
     // Check data received and prepare response
-    responseString = (strcpy(buffer, "DNS") != 0) ? "(0, 0000)" : "(1, 4723)";
+    responseString = (strcpy(buffer, "DNS") != 0) ? "(1, 4723)" : "(0, 0000)";
+
+    printf("Port Mapper: Got message %s. Sending %s in response\n", buffer, responseString);
 
     // Reply with the same data
     if (sendto(sock, responseString, strlen(responseString), 0, (struct sockaddr *) &si_other, slen) == -1)
       errorAndExit("sendto");
 
-    free(responseString);
+    // free(responseString);
   }
   // Close socket
   close(sock);
